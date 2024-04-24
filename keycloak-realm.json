@@ -1,0 +1,139 @@
+{
+  "id": "demo",
+  "realm": "demo",
+  "sslRequired": "none",
+  "enabled": true,
+  "eventsEnabled": true,
+  "eventsExpiration": 900,
+  "adminEventsEnabled": true,
+  "adminEventsDetailsEnabled": true,
+  "attributes": {
+    "adminEventsExpiration": "900"
+  },
+  "accessTokenLifespan": 86400,
+  "clients": [
+    {
+      "id": "demo",
+      "clientId": "demo",
+      "name": "demo",
+      "enabled": true,
+      "publicClient": true,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": true,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "eGOD5IrNEPbpp0d1Vu9eFo5QXHl4ltga",
+      "rootUrl": "http://localhost:5000",
+      "adminUrl": "http://localhost:5000",
+      "baseUrl": "http://localhost:5000",
+      "redirectUris": [
+        "http://localhost:5000/*"
+      ],
+      "webOrigins": [
+        "http://localhost:5000"
+      ]
+    }
+  ],
+  "users": [
+    {
+      "id": "global_admin",
+      "email": "global@admin.com",
+      "username": "global_admin",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "temporary": false,
+          "type": "password",
+          "value": "password"
+        }
+      ],
+      "realmRoles": [
+        "admin"
+      ]
+    },
+    {
+      "id": "nl_admin",
+      "email": "nl_admin@admin.com",
+      "username": "nl_admin",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "temporary": false,
+          "type": "password",
+          "value": "password"
+        }
+      ],
+      "realmRoles": [
+        "admin"
+      ]
+    },
+    {
+      "id": "tolkien",
+      "email": "tolkien@admin.com",
+      "username": "tolkien",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "temporary": false,
+          "type": "password",
+          "value": "password"
+        }
+      ],
+      "realmRoles": [
+        "author"
+      ]
+    },
+    {
+      "id": "austen",
+      "email": "austen@admin.com",
+      "username": "austen",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "temporary": false,
+          "type": "password",
+          "value": "password"
+        }
+      ],
+      "realmRoles": [
+        "author"
+      ]
+    },
+    {
+      "id": "member",
+      "email": "member@admin.com",
+      "username": "member",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "temporary": false,
+          "type": "password",
+          "value": "password"
+        }
+      ],
+      "realmRoles": [
+        "member"
+      ]
+    }
+  ],
+  "roles": {
+    "realm": [
+      {
+        "name": "member",
+        "description": "Member role"
+      },
+      {
+        "name": "admin",
+        "description": "Admin role"
+      },
+      {
+        "name": "author",
+        "description": "Author role"
+      }
+    ]
+  }
+}

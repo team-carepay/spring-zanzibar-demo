@@ -1,0 +1,111 @@
+version: '3.3'
+
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0
+    command: ["start-dev", "--import-realm"]
+    environment:
+      - KC_DB=dev-file
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - KC_HTTP_PORT=9080
+      - KC_HTTPS_PORT=9443
+    ports:
+      - 9080:9080
+      - 9443:9443
+    volumes:
+      - ./keycloak-realm.json:/opt/keycloak/data/import/realm.json:ro
+
+  spicedb:
+    image: authzed/spicedb:v1.31.0
+    command: serve
+    restart: always
+    ports:
+      - 8080:8080
+      - 8443:8443
+      - 9090:9090
+      - 50051:50051
+    environment:
+      SPICEDB_GRPC_PRESHARED_KEY: foobar
+      SPICEDB_DATASTORE_ENGINE: mysql
+      SPICEDB_DATASTORE_CONN_URI: app-spicedb:s3cr3t@tcp(database:3306)/spicedb?parseTime=true
+      SPICEDB_HTTP_ENABLED: 'true'
+      SPICEDB_GRPC_ENABLED: 'true'
+      SPICEDB_LOG_LEVEL: DEBUG
+      SPICEDB_SKIP_RELEASE_CHECK: 'true'
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/grpc_health_probe", "-addr=:50051"]
+      interval: 1s
+      timeout: 30s
+      retries: 30
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  migrate:
+    image: authzed/spicedb:v1.31.0
+    command: migrate head --skip-release-check=true
+    environment:
+      SPICEDB_DATASTORE_ENGINE: mysql
+      SPICEDB_DATASTORE_CONN_URI: app-spicedb:s3cr3t@tcp(database:3306)/spicedb?parseTime=true
+    depends_on:
+      database:
+        condition: service_healthy
+
+  schema:
+    image: authzed/zed:v0.16.4
+    command: import /spicedb-backup.yaml --relationships=false
+    restart: on-failure
+    environment:
+      ZED_ENDPOINT: spicedb:50051
+      ZED_TOKEN: foobar
+      ZED_INSECURE: true
+    volumes:
+      - ./spicedb-backup.yaml:/spicedb-backup.yaml:ro
+    depends_on:
+      spicedb:
+        condition: service_healthy
+
+  database:
+    image: mysql:8
+    ports:
+      - '3306:3306'
+    environment:
+      MYSQL_USER: app-spicedb
+      MYSQL_PASSWORD: s3cr3t
+      MYSQL_ROOT_PASSWORD: sup3r_s3cr3t
+      MYSQL_DATABASE: spicedb
+    healthcheck:
+      test: ["CMD-SHELL", 'mysql --database=$$MYSQL_DATABASE --password=$$MYSQL_ROOT_PASSWORD --execute="SELECT count(table_name) > 0 FROM information_schema.tables;" --skip-column-names -B']
+      interval: 1s
+      timeout: 30s
+      retries: 30
+
+  kafka:
+    image: 'bitnami/kafka:3.3.2-debian-11-r20'
+    ports:
+      - "9092:9092"
+      - "9094:9094"
+    environment:
+      - KAFKA_ENABLE_KRAFT=yes
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+      - KAFKA_CFG_PROCESS_ROLES=broker,controller
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_BROKER_ID=1
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@127.0.0.1:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,EXTERNAL://localhost:9094
+      - BITNAMI_DEBUG=no
+      - ALLOW_PLAINTEXT_LISTENER=yes
+
+  redpanda:
+    image: 'redpandadata/console:v2.2.3'
+    ports:
+      - "9133:8080"
+    environment:
+      - KAFKA_BROKERS=kafka:9092
+#    profiles:
+#      - donotstart
+    depends_on:
+      - kafka

@@ -1,0 +1,97 @@
+type Query {
+    allbooks(first: Int, after: String): BookConnection
+    authorbooks(first: Int, after: String): BookConnection
+    authors: [Author]!
+    libraries: [Library]!
+}
+
+type Mutation  {
+    createLibrary(createLibraryRequest: CreateLibraryRequest!): Library!
+    updateLibrary(updateLibraryRequest: UpdateLibraryRequest!): Library!
+    deleteLibrary(libraryId: ID!): Int
+
+    createAuthor(createAuthorRequest: CreateAuthorRequest!): Author!
+    updateAuthor(updateAuthorRequest: UpdateAuthorRequest!): Author!
+    deleteAuthor(authorId: ID!): Int
+
+    createBook(createBookRequest: CreateBookRequest!): Book!
+    updateBook(updateBookRequest: UpdateBookRequest!) : Book!
+    deleteBook(bookId: ID!) : Int
+}
+
+type Library {
+    id: ID!
+    name: String!
+    user: String
+}
+
+type Book {
+    id: ID!
+    title: String!
+    author: Author!
+    description: String
+}
+
+type Author {
+    id: ID!
+    firstName: String
+    lastName: String
+    user: String!
+    books(first: Int, after: String): BookConnection
+    bio: String
+}
+
+input CreateAuthorRequest {
+    firstName: String
+    lastName: String
+    user: String!
+    bio: String
+}
+
+input UpdateAuthorRequest {
+    id: ID!
+    firstName: String
+    lastName: String
+    user: String!
+    bio: String
+}
+
+input CreateBookRequest {
+    title: String!
+    description: String
+    authorId: ID!
+}
+
+input UpdateBookRequest {
+    id: ID!
+    title: String!
+    description: String
+}
+
+input CreateLibraryRequest {
+    name: String!
+    user: String
+}
+
+input UpdateLibraryRequest {
+    id: ID!
+    name: String!
+    user: String
+}
+
+type BookConnection {
+    pageInfo: PageInfo!
+    edges: [BookEdge]
+}
+
+type BookEdge {
+    cursor: String!
+    node: Book
+}
+
+type PageInfo {
+    hasNextPage: Boolean
+    hasPreviousPage: Boolean
+    startCursor: String
+    endCursor: String
+}

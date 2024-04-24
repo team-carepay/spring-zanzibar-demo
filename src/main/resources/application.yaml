@@ -1,0 +1,76 @@
+server:
+  port: 5000
+
+spring:
+  datasource:
+    url: jdbc:mysql:aws://${spring.datasource.host}/spicedb
+    username: app-spicedb
+    password: s3cr3t
+    host: localhost
+    driver-class-name: software.aws.rds.jdbc.mysql.Driver
+    hikari:
+      auto-commit: false
+  jackson:
+    default-property-inclusion: non_empty
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        show_sql: true
+        jdbc:
+          time_zone: UTC
+          batch_size: 15
+        order_inserts: true
+        order_updates: true
+        connection:
+          provider_disables_autocommit: true
+        query:
+          fail_on_pagination_over_collection: true
+          plan_cache_max_size: 4096
+    open-in-view: false
+  main:
+    allow-bean-definition-overriding: true
+  security:
+    oauth2:
+      client:
+        registration:
+          keycloak:
+            client-id: demo
+            authorization-grant-type: authorization_code
+            scope:
+              - openid
+        provider:
+          keycloak:
+            issuer-uri: http://localhost:9080/realms/demo
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:9080/realms/demo
+  sql:
+    init:
+      mode: always
+  graphql:
+    graphiql:
+      enabled: true
+    schema:
+      inspection:
+        enabled: true
+      introspection:
+        enabled: true
+  kafka:
+    bootstrap-servers: localhost:9094
+    security:
+      protocol: PLAINTEXT
+spicedb:
+  host: localhost:50051
+  use-ssl: false
+  token: foobar
+
+logging:
+  level:
+    root: info
+#    graphql: trace
+#    org.springframework: trace
+#    org.hibernate.sql: debug
+#    org.springframework.boot.autoconfigure.graphql: trace
+#    org.springframework.graphql: trace

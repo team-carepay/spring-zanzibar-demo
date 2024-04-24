@@ -1,0 +1,86 @@
+schema: |-
+  definition user {}
+
+  definition library {
+    relation member: user
+    relation admin: user with valid_ip
+    relation parent: library
+
+    permission view = member + admin + parent->view
+    permission manage = admin + parent->manage
+  }
+
+  definition author {
+    relation user: user | library#admin
+
+    permission manage = user
+    permission view = user
+  }
+
+  definition book {
+    relation library: library
+    relation author: author
+
+    permission view = author->manage + library->view
+    permission update = author->manage + library->manage
+    permission delete = update
+    permission borrow = library->member - library->manage
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  caveat valid_ip(ip ipaddress, cidr string) {
+     ip.in_cidr(cidr)
+  }
+relationships: |-
+  // library admins
+  library:global_corp#admin@user:john[valid_ip:{"cidr":"10.0.0.0/8"}]
+  library:nl_boek#admin@user:mary[valid_ip:{"cidr":"0/0"}]
+
+  // library structure
+  library:americas_comics#parent@library:global_corp
+  library:euro_books#parent@library:global_corp
+  library:nl_boek#parent@library:euro_books
+
+  // authors
+  author:tolkien#user@user:tolkien
+  author:jane_austen#user@user:jane_austen
+  author:tolkien#user@library:global_corp#admin
+
+  // books
+  book:lord_of_the_rings#author@author:tolkien
+  book:the_hobbit#author@author:tolkien
+  book:pride_and_prejudice#author@author:jane_austen
+  book:sense_and_sensibility#author@author:jane_austen
+
+  // members
+  library:global_corp#member@user:member_one
+  library:global_corp#member@user:member_two
+
+  // which book in which library
+  book:the_hobbit#library@library:nl_boek
+  book:lord_of_the_rings#library@library:nl_boek
+  book:pride_and_prejudice#library@library:americas_comics
+  book:sense_and_sensibility#library@library:americas_comics
+assertions:
+  assertTrue:
+    - book:the_hobbit#view@user:member_one
+    - book:the_hobbit#update@user:john
+    - book:the_hobbit#update@user:tolkien
+    - author:tolkien#manage@user:tolkien
+  assertFalse:
+    - book:the_hobbit#view@user:member_unknown
+    - book:price_and_prejudice#update@user:tolkien
+validation: {}

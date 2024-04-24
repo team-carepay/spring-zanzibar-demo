@@ -1,0 +1,26 @@
+<html>
+<head>
+    <script src="//unpkg.com/alpinejs" defer></script>
+</head>
+<body>
+<div x-data="{ users: [] }" x-init="fetch('https://jsonplaceholder.typicode.com/users')
+                      .then(response => response.json())
+                      .then(data => users = data)">
+    <div>
+        <template x-for="user in users" :key="user.id">
+            <div>
+                <div>
+                    <div>
+                        <div x-text="user.name"></div>
+                        <div x-text="user.company.name"></div>
+                        <div x-text="user.phone"></div>
+                        <a x-bind:href="'mailto:' + user.email" x-text="user.email"></a>
+                        <a x-bind:href="'https://' + user.website" x-text="user.website"></a>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+</div>
+</body>
+</html>

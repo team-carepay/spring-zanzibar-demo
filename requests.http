@@ -1,0 +1,143 @@
+# Testing with Keycloak and SpiceDB
+
+### REST: Get single book
+GET http://localhost:5000/books/1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{$auth.token("admin")}}
+
+### REST: Get single author
+GET http://localhost:5000/authors/1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{$auth.token("admin")}}
+
+### List all libraries
+GET http://localhost:5000/libraries
+Authorization: Bearer {{$auth.token("admin")}}
+
+### List all books
+GRAPHQL http://localhost:5000/graphql
+Authorization: Bearer {{$auth.token("admin")}}
+
+query {
+  allbooks(first:4) {
+      edges {
+          node {
+              id
+              title
+              author {
+                  id
+                  firstName
+                  lastName
+              }
+          }
+          cursor
+      }
+      pageInfo {
+          endCursor
+          hasNextPage
+      }
+  }
+}
+
+### List all books
+GRAPHQL http://localhost:5000/graphql
+Authorization: Bearer {{$auth.token("admin")}}
+
+query {
+    authorbooks(first:4) {
+        edges {
+            node {
+                id
+                title
+                author {
+                    id
+                    firstName
+                    lastName
+                }
+            }
+            cursor
+        }
+        pageInfo {
+            endCursor
+            hasNextPage
+        }
+    }
+}
+
+
+### List all authors
+GRAPHQL http://localhost:5000/graphql
+Authorization: Bearer {{$auth.token("admin")}}
+
+query {
+    authors {
+        id
+        firstName
+        lastName
+        user
+        books(first: 2) {
+            edges {
+                node {
+                    id
+                    title
+                    description
+                }
+            }
+            pageInfo {
+                endCursor
+                hasNextPage
+            }
+        }
+    }
+}
+
+
+### change book title
+GRAPHQL http://localhost:5000/graphql
+Authorization: Bearer {{$auth.token("admin")}}
+
+mutation {
+    updateBook(updateBookRequest: {id: 1, description: "new desc", title: "new title"}) {
+        id
+        title
+        description
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### Login to Keycloak as user xxx global_admin | tolkien | member_one
+POST http://localhost:9080/realms/demo/protocol/openid-connect/token
+Authorization: Basic demo eGOD5IrNEPbpp0d1Vu9eFo5QXHl4ltga
+Content-Type: application/x-www-form-urlencoded
+
+username=global_admin&password=password&grant_type=password
+> {%
+    client.global.set('token',response.body.access_token);
+%}
+
